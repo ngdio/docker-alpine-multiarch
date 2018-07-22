@@ -1,0 +1,38 @@
+sudo: required
+services:
+- docker
+language: bash
+env:
+  global:
+  - secure: l2tlniI10PJmcjfh217S62KLtWmny1ruMmwPNTkwTXVaMNTQ6hM5qTTCKlCQlce2MogeL4vW2UlE1lpNPnEYsR7wMnEwbfj4qHcgPfOI5XTAmccopEW72B7xbt5VtwYwjrazin+O+sXM6PO+n6SQNVm/6jBMek2YpH2OtABBjdbluzare73BfmYiSiTwOCdVLqtIKiBwVgLSlX+wf7vI1FmfF2IJ/jJ9SK0On6lVU+zCDoSyd/oXvorcsbfDttrogTIsOMI+O1jo29IodAdTXtPORE0Kh3b6Rc9lnFxXYa9Z3LaItUq8N4o4DA/+UJy+T3cR0ZRsbmhX617pRCvYfdXfQgtt5OIvGsSOMW7Y+1FTzgPhmJwt4KoJt3W19UFUtgdEEBtl8RamhPjnlCU/XAHgkrgaFwmkaV+KTk3eg9l8yETrJjbVpO/LEsvkA+hpfya2a1EstzIiAp7H0Gql+K9Z3mKtoZkpSVMqfxaf5VPIQtbC7YXsPc0aDeiOofg5pbEsrsH81yJ9+2fG5GJgdDGgv2yyJWBuFBoUsC5Uw76r07ickKdI8RxEtiosQ/2LchMSZcN46y7QQU5Eq0YCngJhNO3hJteb5UHhXwqZOJ7tL/YfWRN8bsNtEETiPEZVHEw7IUoz2/Qu7xXWYTgyR7P8GtO3N3rI07+J37aa74I=
+  - secure: blEpld5SWyrkrtajbNBrWN1lkogzMcF06Vm5e35P2Wy5k3BOecLuYYQ4pMfteLX/XEfdbURJ0VKMdxbIMcKQjbrZ9BbXN+b9NfARveV3RvfoFcsBb/GuG2nmGEPQk5tDuactNaMkejWn04YQOujPZTl1fsxsanudl5lw4AuNT/+rwCCFTSRiDtBJtupHuNSbvqdZu4xlzeMr5yHp1ns1PG4N8j8UWOBU27tuYoZcpJZjJI/8jGb5RgGr8ER+BNACblQ9QESA0lGQJNCbO5T41IzSbBlbwbq3mdUik9hTXxh0YWjRsDG4gqVCIo4EjNmOooWSy2iSnN5SAB2rMYIwtcWA8KhWPo8olpYMlTCoAtQLyMAONPgpGfbwSDV2e2y8RTYQ4fO616PbgunTzjBasPsEm1TE4va+9jX8dFTFKQdgEpkJgn5GJpNX6CPb0MO6QQP3mmAKaU1zXoo7c/pHSqPoyQaNmbDNbJDMyT92guZgrH4ZPvb85iqY3HkyNX15FQSAgb3KTcoQxt7xJV9rYO+DnDFOZiL4ewdd6tYAePgf8MHxvhQRnwYJOjIVSde0z9uwr06qOp+5qaQ5csWfdyUGynmb2H2RM8YuqYqikhuZF9AKnHyhOT6naJUAPm8TXawwBCepjVtlxCmnbhmLuxFFV/rrPzaJwWqB4704C9A=
+script:
+# Download QEMU executables
+- ./prepare-qemu.sh
+# Build armhf
+- docker build -t "ngdio/alpine-multiarch:armhf" -f armhf/Dockerfile .
+# Build aarch64
+- docker build -t "ngdio/alpine-multiarch:aarch64" -f aarch64/Dockerfile .
+# Build ppc64le
+- docker build -t "ngdio/alpine-multiarch:ppc64le" -f ppc64le/Dockerfile .
+# Build s390x
+- docker build -t "ngdio/alpine-multiarch:s390x" -f s390x/Dockerfile .
+after_success:
+# Tag and push built images
+- >
+  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+    VERSION=$(cat .VERSION)
+    docker tag ngdio/alpine-multiarch:armhf ngdio/alpine-multiarch:armhf-$VERSION
+    docker push ngdio/alpine-multiarch:armhf
+    docker push ngdio/alpine-multiarch:armhf-$VERSION
+    docker tag ngdio/alpine-multiarch:aarch64 ngdio/alpine-multiarch:aarch64-$VERSION
+    docker push ngdio/alpine-multiarch:aarch64
+    docker push ngdio/alpine-multiarch:aarch64-$VERSION
+    docker tag ngdio/alpine-multiarch:ppc64le ngdio/alpine-multiarch:ppc64le-$VERSION
+    docker push ngdio/alpine-multiarch:ppc64le
+    docker push ngdio/alpine-multiarch:ppc64le-$VERSION
+    docker tag ngdio/alpine-multiarch:s390x ngdio/alpine-multiarch:s390x-$VERSION
+    docker push ngdio/alpine-multiarch:s390x
+    docker push ngdio/alpine-multiarch:s390x-$VERSION
+  fi
