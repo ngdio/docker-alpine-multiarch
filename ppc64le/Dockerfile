@@ -1,4 +1,4 @@
-FROM ppc64le/alpine:3.8
+FROM ppc64le/alpine:3.9
 
 LABEL maintainer="Niklas <dev@n1klas.net>"
 

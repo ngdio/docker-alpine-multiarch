@@ -1,4 +1,4 @@
-FROM arm64v8/alpine:3.8
+FROM arm64v8/alpine:3.9
 
 LABEL maintainer="Niklas <dev@n1klas.net>"
 
